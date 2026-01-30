@@ -1,0 +1,197 @@
+<!-- Updated version 2.0 -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Almaty Tourist App</title>
+
+  <link rel="manifest" href="manifest.json">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 16px;
+      color: #222;
+    }
+    h1 {
+      text-align: center;
+      color: #ff9800;
+    }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 8px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background: #ff9800;
+      color: #fff;
+      cursor: pointer;
+    }
+    button.secondary {
+      background: #1976d2;
+    }
+    button.green {
+      background: #25d366;
+    }
+    button.telegram {
+      background: #0088cc;
+    }
+    select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+      font-size: 16px;
+    }
+    .small {
+      font-size: 14px;
+      color: #555;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>Almaty Tourist</h1>
+<p class="small">Airport Quick Assistant – EN / RU / FA</p>
+
+<div class="card">
+  <h3>🗺 Transport & Stay</h3>
+  <button id="btnHotel">Nearest Hotel / Hostel</button>
+  <button id="btnLocation" class="secondary">Show My Location</button>
+</div>
+
+<div class="card">
+  <h3>💳 Payment & Support</h3>
+  <button id="btnPay" class="green">Pay Taxi / Bus (min 10000 ₸)</button>
+  <button id="btnWhatsApp" class="green">WhatsApp Support</button>
+  <button id="btnTelegram" class="telegram">Telegram Support</button>
+</div>
+
+<div class="card">
+  <h3>🌐 Quick Translation (Offline)</h3>
+  <select id="phraseSelect">
+    <option value="">Select a phrase</option>
+    <option value="taxi">I need a taxi</option>
+    <option value="hotel">Take me to the nearest hotel</option>
+    <option value="bus">Where is the bus stop?</option>
+    <option value="price">How much is the fare?</option>
+  </select>
+  <p id="translationResult" class="small"></p>
+</div>
+
+<div class="card">
+  <button id="btnInstall">Install App</button>
+</div>
+
+<p class="small">AlmatyTourist.App – MVP</p>
+
+<script>
+let deferredPrompt = null;
+
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+});
+
+document.getElementById("btnInstall").addEventListener("click", async () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt = null;
+  } else {
+    alert("App already installed or not supported.");
+  }
+});
+
+document.getElementById("btnHotel").addEventListener("click", () => {
+  window.open(
+    "https://yandex.com/maps/?text=hotel%20near%20Almaty%20Airport",
+    "_blank"
+  );
+});
+
+document.getElementById("btnLocation").addEventListener("click", () => {
+  if (!navigator.geolocation) {
+    alert("GPS not supported");
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const lat = pos.coords.latitude;
+      const lon = pos.coords.longitude;
+      window.open(
+        `https://yandex.com/maps/?ll=${lon},${lat}&z=15`,
+        "_blank"
+      );
+    },
+    () => alert("Location permission denied")
+  );
+});
+
+document.getElementById("btnPay").addEventListener("click", () => {
+  window.open(
+    "https://wa.me/77778444254?text=I%20need%20help%20to%20pay%20taxi%20or%20bus",
+    "_blank"
+  );
+});
+
+document.getElementById("btnWhatsApp").addEventListener("click", () => {
+  window.open("https://wa.me/77778444254", "_blank");
+});
+
+document.getElementById("btnTelegram").addEventListener("click", () => {
+  window.open("https://t.me/mdankz", "_blank");
+});
+
+const phrases = {
+  taxi: {
+    en: "I need a taxi",
+    ru: "Мне нужно такси",
+    fa: "من تاکسی می‌خواهم"
+  },
+  hotel: {
+    en: "Take me to the nearest hotel",
+    ru: "Отвезите меня в ближайший отель",
+    fa: "مرا به نزدیک‌ترین هتل ببرید"
+  },
+  bus: {
+    en: "Where is the bus stop?",
+    ru: "Где находится автобусная остановка?",
+    fa: "ایستگاه اتوبوس کجاست؟"
+  },
+  price: {
+    en: "How much is the fare?",
+    ru: "Сколько стоит проезд?",
+    fa: "کرایه چقدر است؟"
+  }
+};
+
+document.getElementById("phraseSelect").addEventListener("change", function () {
+  const val = this.value;
+  if (!val) {
+    document.getElementById("translationResult").innerText = "";
+    return;
+  }
+  const p = phrases[val];
+  document.getElementById("translationResult").innerText =
+    `EN: ${p.en}\nRU: ${p.ru}\nFA: ${p.fa}`;
+});
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("service-worker.js");
+}
+</script>
+
+</body>
+</html>
