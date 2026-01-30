@@ -1,0 +1,134 @@
+<!-- Updated version 2.0 -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Almaty Tourist App</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#ff9800">
+
+<script src="https://api-maps.yandex.ru/2.1/?lang=en_US"></script>
+
+<style>
+body{margin:0;font-family:system-ui;background:#f4f6fb}
+header{background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;padding:20px;text-align:center}
+.card{background:#fff;margin:15px;padding:16px;border-radius:14px;box-shadow:0 6px 14px rgba(0,0,0,.1)}
+button,a.btn{width:100%;padding:14px;margin-top:10px;border:none;border-radius:10px;font-size:15px;background:#ff9800;color:#fff;text-decoration:none;display:block;text-align:center}
+textarea{width:100%;height:60px;padding:8px;border-radius:8px}
+#map{height:250px;border-radius:12px}
+footer{text-align:center;font-size:12px;color:#777;margin:20px}
+.lang button{background:#ffffff33;color:#fff;border:none;margin:4px;padding:6px 10px;border-radius:6px}
+</style>
+</head>
+
+<body>
+
+<header>
+<h2 id="title">Almaty Tourist</h2>
+<p id="subtitle">Airport Quick Guide</p>
+<div class="lang">
+<button onclick="setLang('en')">EN</button>
+<button onclick="setLang('ru')">RU</button>
+<button onclick="setLang('fa')">FA</button>
+</div>
+</header>
+
+<div class="card">
+<h3>🚕 Transport</h3>
+<button onclick="showRoute()">Nearest Hotel / Hostel</button>
+</div>
+
+<div class="card">
+<h3>💳 Payment & Support</h3>
+<button onclick="pay()">Pay Taxi / Bus (min 10000 ₸)</button>
+<a class="btn" href="https://wa.me/77778444254" target="_blank">WhatsApp: +7 777 844 4254</a>
+<a class="btn" href="https://t.me/mdankz" target="_blank">Telegram: @mdankz</a>
+</div>
+
+<div class="card">
+<h3>📍 Your Location</h3>
+<div id="map"></div>
+<button onclick="getLocation()">Show My Location</button>
+</div>
+
+<div class="card">
+<h3>🌐 Quick Translation</h3>
+<textarea id="txt" placeholder="Type English sentence..."></textarea>
+<button onclick="translate()">Translate</button>
+<p id="out"></p>
+</div>
+
+<div class="card">
+<button id="installBtn" style="display:none">Install App</button>
+</div>
+
+<footer>AlmatyTourist.App – MVP</footer>
+
+<script>
+/* Language */
+const langData={
+en:{title:"Almaty Tourist",subtitle:"Airport Quick Guide"},
+ru:{title:"Турист Алматы",subtitle:"Гид аэропорта"},
+fa:{title:"توریست آلماتی",subtitle:"راهنمای فرودگاه"}
+};
+function setLang(l){
+document.getElementById("title").innerText=langData[l].title;
+document.getElementById("subtitle").innerText=langData[l].subtitle;
+}
+
+/* Map */
+let map,mark;
+ymaps.ready(()=>{map=new ymaps.Map("map",{center:[43.3521,77.0405],zoom:13});});
+function getLocation(){
+navigator.geolocation.getCurrentPosition(p=>{
+const c=[p.coords.latitude,p.coords.longitude];
+if(mark)map.geoObjects.remove(mark);
+mark=new ymaps.Placemark(c);
+map.geoObjects.add(mark);
+map.setCenter(c,15);
+});
+}
+
+/* Translation (offline phrases) */
+const phrases={
+"Please take me to this address":["Пожалуйста, отвезите меня по этому адресу","لطفا مرا به این آدرس ببرید"],
+"How much is the fare?":["Сколько стоит проезд?","کرایه چقدر است؟"],
+"I need a hotel":["Мне нужен отель","من هتل می‌خواهم"]
+};
+function translate(){
+const t=document.getElementById("txt").value.trim();
+if(phrases[t]){
+document.getElementById("out").innerText=phrases[t][1];
+}else{
+document.getElementById("out").innerText="Phrase not available offline";
+}
+}
+
+/* Actions */
+function pay(){alert("Support will assist payment (min 10000 ₸)");}
+function showRoute(){alert("Bus 12 → City Center → Nearest Hotels");}
+
+/* Service Worker */
+if("serviceWorker" in navigator){
+navigator.serviceWorker.register("service-worker.js");
+}
+
+/* Install Button */
+let deferredPrompt;
+const btn=document.getElementById("installBtn");
+window.addEventListener("beforeinstallprompt",e=>{
+e.preventDefault();
+deferredPrompt=e;
+btn.style.display="block";
+});
+btn.onclick=()=>{
+deferredPrompt.prompt();
+deferredPrompt=null;
+btn.style.display="none";
+};
+</script>
+
+</body>
+</html>
